@@ -1,0 +1,51 @@
+server {
+        listen 80;
+        server_name rkphp.com www.rkphp.com;
+        return 302 https://rkphp.com;
+}
+ 
+server {
+        listen 443 ssl;
+        server_name rkphp.com www.rkphp.com;
+        include snippets/self-signed.conf; 
+        include snippets/ssl-params.conf; 
+        root /var/www/html;
+        index index.php;
+
+        gzip on;
+        gzip_disable "msie6";
+        gzip_types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript application/javascript;
+
+  client_max_body_size 32m;
+
+        access_log /var/log/nginx/ihor.com_access.log;
+        error_log /var/log/nginx/ihor.com_error.log;
+
+        location ~ /\. {
+                deny all;
+        }
+
+        location ~* /(?:uploads|files)/.*\.php$ {
+                deny all;
+        }
+
+        location ~* ^.+\.(ogg|ogv|svg|svgz|eot|otf|woff|mp4|ttf|rss|atom|jpg|jpeg|gif|png|ico|zip|tgz|gz|rar|bz2|doc|xls|exe|ppt|tar|mid|midi|wav|bmp|rtf)$ {
+                access_log off;
+                log_not_found off;
+        }
+
+        location / {
+                try_files $uri $uri/ /index.php?$args;
+        }
+
+        location ~ \.php$ {
+        try_files $fastcgi_script_name =404;
+        include fastcgi_params;
+        fastcgi_pass  unix:/run/php/php7.4-fpm.sock;
+        fastcgi_index index.php;
+        fastcgi_param DOCUMENT_ROOT  $realpath_root;
+        fastcgi_param SCRIPT_FILENAME   $realpath_root$fastcgi_script_name;
+	}
+ 
+}
+
